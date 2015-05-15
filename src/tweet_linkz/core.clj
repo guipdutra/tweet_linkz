@@ -16,21 +16,21 @@
                                 (my-tokens :access_token)
                                 (my-tokens :access_token_secret)))
 
-(defn extract-link
-  [tweet]
-  (re-find #"http://\S+[^\W]" tweet))
+(def extract-link (partial re-find #"http://\S+[^\W]" ))
 
 (def timeline-tweets
   (map :text (statuses-home-timeline :oauth-creds my-creds
-                                       :params {:count 2}
-                                       :callbacks (SyncSingleCallback. response-return-body
-                                                                       response-throw-error
-                                                                       exception-rethrow))))
-(defn get-links-from-tweets
+                                     :params {:count 100}
+                                     :callbacks (SyncSingleCallback. response-return-body
+                                                                     response-throw-error
+                                                                     exception-rethrow))))
+(defn links-from-tweets
   [tweets]
-  (remove nil? (map #(extract-link %) tweets)))
+  (remove nil?
+          (map extract-link tweets)))
 
 (defn -main
   []
   (dorun
-    (map #(println %) (get-links-from-tweets timeline-tweets))))
+    (map println
+         (links-from-tweets timeline-tweets))))
